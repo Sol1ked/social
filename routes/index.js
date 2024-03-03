@@ -1,9 +1,21 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const multer = require('multer');
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+const uploadDestination = 'uploads';
+
+//Показать, где хранить файлы
+const storage = multer.diskStorage({
+  destination: uploadDestination,
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+
+const uploads = multer({ storage: storage });
+
+router.get('/register', (req, res) => {
+  res.send('register');
 });
 
 module.exports = router;
