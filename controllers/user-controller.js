@@ -3,6 +3,7 @@ const bcypt = require('bcryptjs');
 const Jdenticon = require('jdenticon');
 const path = require('path');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
 
 const UserController = {
   register: async (req, res) => {
@@ -38,23 +39,138 @@ const UserController = {
 
       res.json(user);
     } catch (error) {
-      console.log('Error in register', error);
+      console.error('Error in register', error);
       res.status(500).json({ error: 'Internal server error' });
     }
 
     res.send('OK');
   },
   login: async (req, res) => {
-    res.send('login');
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Все поля обязательны для заполнения!' });
+    }
+
+    try {
+      const user = await prisma.user.findUnique({ where: { email } });
+
+      if (!user) {
+        return res.status(400).json({ error: 'Неверный логин или пароль' });
+      }
+
+      const valid = await bcypt.compare(password, user.password);
+
+      if (!valid) {
+        return res.status(400).json({ error: 'Неверный логин или пароль' });
+      }
+
+      const token = jwt.sign({ userId: user.id }, process.env.SECRET_KEY);
+
+      res.json({ token });
+    } catch (error) {
+      console.error('Error in login', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   },
   getUserById: async (req, res) => {
-    res.send('getUserById');
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id },
+        include: {
+          followers: true,
+          following: true,
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: 'Пользователь не найден' });
+      }
+
+      const isFollowing = await prisma.follows.findFirst({
+        where: {
+          AND: [{ followerId: userId }, { followingId: id }],
+        },
+      });
+
+      res.json({ ...user, isFollowing: Boolean(isFollowing) });
+    } catch (error) {
+      console.error('Get Current Error', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   },
   updateUser: async (req, res) => {
-    res.send('updateUser');
+    const { id } = req.params;
+    const { email, name, dateOfBirth, bio, location } = req.body;
+
+    let filePath;
+
+    if (req.file && req.file.path) {
+      filePath = req.file.path;
+    }
+
+    if (id !== req.user.userId) {
+      return res.status(403).json({
+        error: 'Нет доступа',
+      });
+    }
+
+    try {
+      if (email) {
+        const existingUser = await prisma.user.findFirst({ where: { email: email } });
+
+        if (existingUser && existingUser.id !== id) {
+          return res.status(400).json({ error: 'Такая почта уже используется' });
+        }
+      }
+      const user = await prisma.user.update({
+        where: { id },
+        data: {
+          email: email || undefined,
+          name: name || undefined,
+          avatarUrl: filePath ? `/${filePath}` : undefined,
+          dateOfBirth: dateOfBirth ? dateOfBirth : undefined,
+          bio: bio || undefined,
+          location: location || undefined,
+        },
+      });
+
+      res.json(user);
+    } catch (error) {
+      console.error('Update user error', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   },
   current: async (req, res) => {
-    res.send('current');
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.userId },
+        include: {
+          followers: {
+            include: {
+              follower: true,
+            },
+          },
+          following: {
+            include: {
+              following: true,
+            },
+          },
+        },
+      });
+
+      if (!user) {
+        return res.status(400).json({
+          error: 'Пользователь не найден',
+        });
+      }
+      res.json(user);
+    } catch (error) {
+      console.error('Get Current Error', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   },
 };
 
