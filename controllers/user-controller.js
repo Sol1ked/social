@@ -17,7 +17,7 @@ const UserController = {
 
       if (existingUser) {
         return res.status(400).json({
-          error: 'Пользователь с таким email уже существует',
+          error: 'Пользователь уже существует',
         });
       }
 
@@ -25,7 +25,7 @@ const UserController = {
 
       const png = Jdenticon.toPng(name, 200);
       const avatarName = `${name}_${Date.now()}.png`;
-      const avatarPath = path.join(__dirname, '../uploads', avatarName);
+      const avatarPath = path.join(__dirname, '/../uploads', avatarName);
       fs.writeFileSync(avatarPath, png);
 
       const user = await prisma.user.create({
@@ -33,7 +33,7 @@ const UserController = {
           email,
           password: hashedPassword,
           name,
-          avatarUrl: `/uploads/${avatarPath}`,
+          avatarUrl: `/uploads/${avatarName}`,
         },
       });
 
