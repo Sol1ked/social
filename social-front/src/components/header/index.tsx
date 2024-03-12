@@ -17,12 +17,13 @@ export const Header = () => {
         <p className="font-bold text-inherit">Network Social</p>
       </NavbarBrand>
       <NavbarContent justify="end">
-        <NavbarItem className="lg:flex text-3xl cursor-pointer">
+        <NavbarItem
+          onClick={() => toggleTheme()}
+          className="lg:flex text-3xl cursor-pointer"
+        >
           {theme === "light" ? <FaRegMoon /> : <LuSunMedium />}
         </NavbarItem>
-        <NavbarItem>
-          
-        </NavbarItem>
+        <NavbarItem></NavbarItem>
       </NavbarContent>
     </Navbar>
   )
