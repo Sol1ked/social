@@ -19,7 +19,7 @@ export const User: React.FC<Props> = ({
     <NextUiUser
       name={name}
       className={className}
-      description={className}
+      description={description}
       avatarProps={{ src: `${BASE_URL}${avatarUrl}` }}
     />
   )

@@ -2,6 +2,7 @@ import React, { useState } from "react"
 
 import {
   CardBody,
+  CardFooter,
   CardHeader,
   Card as NextUiCard,
   Spinner,
@@ -22,6 +23,12 @@ import { useSelector } from "react-redux"
 import { User } from "../user"
 import { formatToClientDate } from "../../utils/format-to-client-date"
 import { RiDeleteBinLine } from "react-icons/ri"
+import { Typography } from "../typography"
+import { MetaInfo } from "../meta-info"
+import { MdOutlineFavoriteBorder } from "react-icons/md"
+import { FcDislike } from "react-icons/fc"
+import { FaRegComment } from "react-icons/fa"
+import { ErrorMessage } from "../error-message"
 
 type Props = {
   avatarUrl: string
@@ -58,6 +65,7 @@ export const Card: React.FC<Props> = ({
   const [error, setError] = useState("")
   const navigate = useNavigate()
   const currentUser = useSelector(selectCurrent)
+
   return (
     <NextUiCard className="mb-5">
       <CardHeader className="justify-between items-center bg-transparent">
@@ -79,7 +87,25 @@ export const Card: React.FC<Props> = ({
           </div>
         )}
       </CardHeader>
-      <CardBody className="px-3 py-2 mb-5"></CardBody>
+      <CardBody className="px-3 py-2 mb-5">
+        <Typography>{content}</Typography>
+      </CardBody>
+      {cardFor !== "comment" && (
+        <CardFooter className="gap-3">
+          <div className="flex gap-5 items-center">
+            <div>
+              <MetaInfo
+                count={likesCount}
+                Icon={likedByUser ? FcDislike : MdOutlineFavoriteBorder}
+              />
+            </div>
+            <Link to={`/posts/${id}`}>
+              <MetaInfo count={commentsCount} Icon={FaRegComment} />
+            </Link>
+          </div>
+          <ErrorMessage error={error} />
+        </CardFooter>
+      )}
     </NextUiCard>
   )
 }
