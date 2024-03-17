@@ -2,17 +2,17 @@ import { Like } from "../types"
 import { api } from "./api"
 
 export const likesApi = api.injectEndpoints({
-  endpoints: builder => ({
-    likePost: builder.mutation<Like, Partial<Like>>({
-      query: newLike => ({
-        url: "/commments",
+  endpoints: (builder) => ({
+    likePost: builder.mutation<Like, { postId: string }>({
+      query: (body) => ({
+        url: "/likes",
         method: "POST",
-        body: newLike,
+        body,
       }),
     }),
     unlikePost: builder.mutation<void, string>({
-      query: likeId => ({
-        url: `/commments/${likeId}`,
+      query: (postId) => ({
+        url: `/likes/${postId}`,
         method: "DELETE",
       }),
     }),
