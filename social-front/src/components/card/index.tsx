@@ -66,6 +66,7 @@ export const Card = ({
   const [error, setError] = useState("")
   const navigate = useNavigate()
   const currentUser = useSelector(selectCurrent)
+  console.log(cardFor)
 
   const refetchPosts = async () => {
     switch (cardFor) {
@@ -73,7 +74,7 @@ export const Card = ({
         await triggerGetAllPosts().unwrap()
         break
       case "current-post":
-        await triggerGetAllPosts().unwrap()
+        await triggerGetPostById(id).unwrap()
         break
       case "comment":
         await triggerGetPostById(id).unwrap()
@@ -88,7 +89,8 @@ export const Card = ({
       likedByUser
         ? await unlikePost(id).unwrap()
         : await likePost({ postId: id }).unwrap()
-      await triggerGetPostById(id).unwrap()
+
+      await refetchPosts()
     } catch (err) {
       if (hasErrorField(err)) {
         setError(err.data.error)
