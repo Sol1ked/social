@@ -20,7 +20,7 @@ export const Navbar = () => {
         </li>
         <li>
           <NavButton icon={<FaUser />} href={"followers"}>
-            Подписки
+            Подписчики
           </NavButton>
         </li>
       </ul>
